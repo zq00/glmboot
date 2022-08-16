@@ -1,0 +1,363 @@
+---
+title: "Real data example"
+format: html
+author: "Qian Zhao"
+date: '2022-07-08'
+editor: visual
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = F, warning = F)
+library(readxl)
+library(tidyverse)
+library(glmhd)
+fileloc <- "/Users/zq/Desktop/Topics/glm_boot/paper/code/Arxiv/R/"
+filename = list.files(path=fileloc, pattern = "*.R")
+sourcefile = sapply(filename, function(t) paste0(fileloc, t))
+sapply(sourcefile, source, .GlobalEnv)
+```
+
+```{r, helper, echo = F}
+# Helper functions
+rms <- function(t) sqrt(sum(t^2) / length(t))
+boot_fit_master <- function(fit, B){
+  gamma_hat <- numeric(10)
+  for(i in 1:10){
+    boot_fit <- tryCatch(glm_boot(fit, b_boot = 10, verbose = F), 
+                         error = function(e) return(-1))
+    if(length(boot_fit) == 1 || abs(boot_fit$alpha) > 5) return(-1);
+    gamma_hat[i] <- boot_fit$gamma_hat
+  }
+  gamma <- mean(gamma_hat)
+  
+  s_hat <- gamma / rms(fit$x %*% fit$coef)
+  beta_s <- fit$coef * s_hat
+  
+  # compute the bootstrap samples 
+  family <- fit$family # family and link 
+  family$simulate_fun <- get_simulate_fun(family) # a function to simulate Y from the linear predictor
+  boot_sample <- boot(fit$x, beta_s, family, B, verbose = F)
+  
+  sd_boot <- apply(boot_sample, 1, sd)
+  mean_ap <- apply(boot_sample, 1, mean)
+  alpha_boot <- lm(mean_ap ~ beta_s + 0, weights = 1/sd_boot^2)$coef
+  
+  return(list(gamma_hat = gamma, beta_s = beta_s, boot_sample = boot_sample, sd_boot = sd_boot, alpha_boot = alpha_boot, mle = fit$coef))
+}
+```
+
+In Section 5 we apply the resized bootstrap procedure to a real data. Researchers want to understand which factors are associated with restrictive spirometry pattern (RSP). They are particularly interested in the relationship between kidney function and RSP, and they hypothesize that glomerular hyperfiltration (GHF) may be associated with RSP risk.
+
+They collected data from participants in Korea National Health and Nutrition Examination Survey *(*KNHANES) from 2009-2015. The outcome variable in this study is RSP (defined as FVC $<$ 80% in predicted value AND FEV1/FVC $\geq$ 0.7 [^1]) and the covariates include demographic variables, medical history, medications used, and a variety of health-related variables.
+
+[^1]: FVC is forced vital capacity and FEV1 is forced expiratory volume in one second
+
+```{r, load_data}
+dataloc <- "/Users/zq/Desktop/Topics/glm_boot/paper/code/Arxiv/Data/"
+rsp <- read_excel(paste0(dataloc, "/rsp.xlsx"), na = ".")
+pos <- rsp$HE_FVCp < 80 & rsp$HE_FEV1FVC > 0.7 # positive obs
+```
+
+```{r, echo = F, result = F}
+# Drop binary variables that occur in less than 5% in positive or negative class: the variable list removed "PU","CVD","ATO_DX", "BA_DX", "GHF"
+# data.frame(rsp,pos = pos) %>% drop_na() %>% group_by(pos) %>% summarize(mean(ATO_DX))
+```
+
+## Fitting logistic regression on full data
+
+Since I will fit a logistic regression using a smaller sample size later (sample size $n=200$), I remove the variables that have smaller than 5% occurance in the positive or negative class (therefore I remove Proteinuria, Previous cardiovascular disease, Pulmondary TB, Atopic dermatitis, Bronchial asthma, Glomerular hyperfiltration).
+
+I also standardize the variables before running GLM.
+
+```{r, choose_var}
+var <- c("SMK_CRNT", "DNK_HIGH", "EDU_HIGH", "INCM_HIGH","STRESS_HIGH", 
+         "A_AGE", "A_SEX",  "HE_SBP", "HE_DBP", "LAB_GLU_SI",
+         "TB_DX", "LAB_TG_SI", "LAB_HDL_SI", "HE_WC", "LAB_WBC",
+         "LAB_HB", "AR_DX")
+data_full <- data.frame(rsp[,var],pos = pos) %>% drop_na()
+pos_index <- which(data_full$pos)
+```
+
+```{r, standardize_full}
+data_full_standardized <- data_full
+data_full_standardized[,!names(data_full_standardized) == "pos"] <- scale(data_full_standardized[,!names(data_full_standardized) == "pos"])
+```
+
+```{r}
+fit_full <- glm(pos~., data=data_full_standardized, family = binomial)
+```
+
+## Fitting logistic regression on one smaller sample
+
+I now fit the logistic regression on a smaller sample of size $n=200$. first select $N=4800$ observations (which includes all of the positive cases), then I create 24 subsets of size $n=200$. I fit an MLE in one sub-sample and compare the confidence interval using classical theory and the resized bootstrap.
+
+```{r, subsample}
+set.seed(50)
+N <- 4800
+n <- 200
+nsubsample <- 24
+subset <- c(pos_index,sample((1:nrow(data_full))[-pos_index] , N-length(pos_index), replace = F))
+ind <- matrix(sample(1:N, N, replace = F), nrow = nsubsample, ncol = n)
+```
+
+```{r,fit_small}
+data_small <- data_full[subset[ind[1, ]],]
+data_small[,!names(data_small) == "pos"] <- scale(data_small[,!names(data_small) == "pos"])
+data_small <- cbind(1, data_small )
+  
+fit_small <- glm(pos ~ . + 0 , data = data_small, family = binomial, x=T, y = T) # fit MLE
+boot_small <- boot_fit_master(fit_small, B = 1000) # resized bootstrap
+```
+
+```{r,compute_boot_ci, echo = T}
+# function to compute the lower and upper CI
+compute_boot_ci <- function(bootfit, level){
+   q_up <- (1 + level)/2
+   q_low <- (1 - level) / 2
+   bootsample_adj <- (bootfit$boot_sample - bootfit$alpha * bootfit$beta_s)/bootfit$sd_boot
+   lower <- (bootfit$mle - apply(bootsample_adj, 1, function(t) quantile(t, q_up)) * bootfit$sd_boot) / bootfit$alpha
+   upper <- (bootfit$mle - apply(bootsample_adj, 1, function(t) quantile(t, q_low)) * bootfit$sd_boot) / bootfit$alpha
+   list(lower = lower, upper = upper)
+}
+
+```
+
+The bootstrap method brings the CI closer to the large sample estimates
+
+```{r, compute_ci}
+alpha <- 0.95
+lower_classical <- fit_small$coef - qnorm(0.5 + alpha/2) * summary(fit_small)$coef[, 2]
+upper_classical <- fit_small$coef + qnorm(0.5 + alpha/2) * summary(fit_small)$coef[, 2]
+boot_ci <- compute_boot_ci(boot_small, alpha)
+```
+
+```{r, echo = F}
+ci_value <- tibble(
+  name = names(coef(fit_small))[-(1:6)],
+  estimate_classical = fit_small$coef[-(1:6)],
+  estimate_boot = (fit_small$coef / boot_small$alpha_boot)[-(1:6)],
+  classical_lower = lower_classical[-(1:6)],
+  classical_upper = upper_classical[-(1:6)],
+  boot_lower = boot_ci$lower[-(1:6)],
+  boot_upper = boot_ci$upper[-(1:6)],
+  estimate_full = coef(fit_full)[-(1:6)]
+) 
+order <- sort(ci_value$estimate_full, index.return = T )$ix
+ci_value <- ci_value[order, ]
+```
+
+```{r, echo = F, fig.width = 8, fid.height = 7}
+location = 1:nrow(ci_value)
+names <- read_excel(paste0(dataloc, "names.xlsx"),   sheet = "Sheet1", col_names = FALSE)
+for(i in 1:nrow(ci_value)){
+  ci_value$name[i] <- names[which(names[,1] == ci_value$name[i]),2]
+}
+
+# png(filename = "/Users/zq/Documents/Simulation_Data/glm/glm_boot/fig/real_ci0815.png",width = 8, height = 4.8, units = "in", res = 1500)
+ggplot() + 
+  geom_segment(aes(x = ci_value$classical_lower, 
+                   xend = ci_value$classical_upper,
+                   y = location + 0.08, 
+                   yend = location + 0.08),
+               color = "black") + 
+  geom_segment(aes(x = ci_value$boot_lower, 
+                   xend = ci_value$boot_upper,
+                   y = location -0.08, 
+                   yend = location -0.08), 
+               color = "red") + 
+  geom_point(aes(x = ci_value$estimate_full, y = location), size = 1, color = "black") +
+  scale_y_continuous(breaks = location, labels = ci_value$name) +
+  ylab("") + 
+  xlab("CI of log odds-ratio") + 
+  geom_segment(aes(x = 2, xend = 2.5, y = c(2, 3), yend = c(2, 3)), color = c("red", "black")) + 
+   annotate(
+    "text", label = "Classical", 
+    x = 1.5, y = 3, size = 4
+  ) + 
+  annotate("text", label = "Resized Bootstrap", 
+    x = 1.5, y = 2, size = 4) + 
+  theme_bw() + 
+  theme(text = element_text(size = 16, color = "black"))
+# dev.off()
+```
+
+## Fit logistic MLE on all of the subsets
+
+We repeat the process for each individual subset in order to study the bias, variance of the MLE.
+
+### Computing MLE in each subset
+
+We now compute the MLE, as well as the resized bootstrap, for each sub-sample of size $n = 200$.
+
+```{r, mle_subsample, message = F}
+p <- ncol(data_full) - 1
+mle_s <- matrix(0, p + 1, nsubsample)
+sd_mle <- matrix(0, p + 1, nsubsample)
+sep <- NULL # store subset index where the logistic regression reports an error 
+B <- 1000 # number of bootstrap repetitions
+
+alpha_boot <- numeric(nsubsample)
+sd_boot <- matrix(0, nsubsample, p + 1)
+bootsample <- list()
+fit_boot_store <- list()
+error <- NULL # store error of resized bootstrap 
+
+for(i in 1:nsubsample){
+  data_small <- data_full[subset[ind[i, ]],]
+  data_small[,!names(data_full_standardized) == "pos"] <- scale(data_small[,!names(data_full_standardized) == "pos"])
+  data_small <- cbind(1, data_small)
+  
+  fit <- tryCatch(error= function(e) {cat(i, "E!\t"); return(-1)}, glm(pos ~ . + 0 , data = data_small, family = binomial, x=T, y = T))
+  if(length(fit) == 1 ){sep <- c(sep, i); error <- c(error,i); next; }else{
+    mle_s[,i] <- fit$coef
+    sd_mle[,i] <- summary(fit)$coef[,2]
+  }
+  
+  fit_boot <-  tryCatch(error= function(e) {cat(i, "E!\t"); return(-1)}, boot_fit_master(fit, B))
+  if(length(fit_boot) == 1) {error <- c(error, i); next;}
+  fit_boot_store[[i]] <- fit_boot
+  sd_boot[i, ] <- apply(fit_boot$boot_sample, 1, sd)
+  mean_ap <- apply(fit_boot$boot_sample, 1, mean)
+  alpha_boot[i] <- lm(mean_ap ~ fit_boot$beta_s + 0, weights = 1/sd_boot[i, ]^2)$coef
+  bootsample[[i]] <- fit_boot$boot_sample
+}
+
+if(length(sep) >= 1){
+  mle_s <- mle_s[,-sep]
+  sd_mle <- sd_mle[,-sep]
+}
+if(length(error) >= 1){
+  alpha_boot <- alpha_boot[-error]
+  sd_boot <- sd_boot[-error, ]
+}
+
+```
+
+The number of times the MLE does not exist is `r length(sep)` and the number of times the resized bootstrap fails is `r length(error)`.
+
+### Bias of the MLE
+
+We plot the average MLE (in sub-samples) versus the MLE using the full data (the full data contains `r nrow(data_full)` observations). The MLE in the small subset slightly over-estimates the large sample coefficient which we would get if we fit a logistic regression using the full data. The resized bootstrap method estimates a bias of `r mean(alpha_boot)` (averaged over all the repetitions).
+
+```{r, plot_bias, echo = F}
+avg_alpha_ab <- mean(alpha_boot)
+avg_mle <- rowMeans(mle_s)
+std_mle <- apply(mle_s, 1, sd)
+# png(filename = "/Users/zq/Documents/Simulation_Data/glm/glm_boot/fig/real_bias0815.png",width = 5, height = 4, units = "in", res = 3000)
+ggplot() + 
+  geom_point(aes(x = coef(fit_full)[-1], y = avg_mle[-1]), color = "black", size = 2) + 
+  geom_abline(slope = 1, intercept = 0, color = "black") + 
+  geom_abline(slope = avg_alpha_ab, intercept = 0, color = "red") +
+  xlim(c(-0.5, 0.5)) + 
+  xlab("Model Coefficients") + 
+  ylab("Average MLE") + 
+  theme_bw() + 
+  theme(text = element_text(size = 18))
+# dev.off()
+```
+
+### Std.dev of the MLE
+
+Next, we plot the standard deviation of the MLE, showing the estimates using classical theory (results from the `glm` function), using resized bootstrap, as well as the empirical std.dev from repeated sampling (here, we take `r nsubsample` sub-samples in total)
+
+```{r, plot_std, echo = F}
+std_data <- tibble(
+  std = rep(std_mle[-1], time = 2),  # observed std
+  estimated = c(rowMeans(sd_mle)[-1], # reported by R
+                colMeans(sd_boot)[-1]),
+  method = rep(c("Classical",  "Adj.Bootstrap"), each = 17)
+)
+
+# png(filename = "/Users/zq/Documents/Simulation_Data/glm/glm_boot/fig/real_sd0815.png",width = 6, height = 4.8, units = "in", res = 3000)
+ggplot(std_data) + 
+  geom_point(aes(x = std, y = estimated, color = method), size = 2)+  
+  geom_abline(slope = 1, intercept = 0) + 
+  xlab("Std.Dev from Repeated Sampling ") + 
+  ylab("Estimated Std.Dev") + 
+  scale_x_continuous(breaks=c(0,  0.05, 0.10, 0.15, 0.20, 0.25)) +
+  scale_y_continuous(breaks=c(0,  0.05, 0.10, 0.15, 0.20, 0.25, 0.3, 0.35), limits = c(0, 0.35)) +
+  scale_colour_manual(name  ="Method",
+                      breaks=c("Classical", "Adj.Bootstrap"),
+                      values=c("black", "red"),
+                      labels=c("Classical", "Resized Boot")) +
+  theme_bw() + 
+    theme(text = element_text(size = 18),
+          legend.position = c(0.95, 0.35),
+          legend.justification = c("right", "top"),
+          legend.box.just = "right",
+          legend.margin = margin(6, 6, 6, 6)
+    ) 
+# dev.off()
+```
+
+### Coverage proportion
+
+Finally, we compute the coverage property of the resized bootstrap method.
+
+```{r, compute_coverage_classical, echo = F}
+coverage_classical <- function(alpha, k){
+  z <- qnorm(1/2 + alpha/2) 
+  lower <- mle_s[-1, ] - z * sd_mle[-1, ]
+  upper <- mle_s[-1, ] + z * sd_mle[-1, ]
+  covered <- fit_full$coef[-1] < upper & fit_full$coef[-1]  > lower
+  list(
+    avg = mean(covered) * 100,
+    sd = sd(colMeans(covered)) / sqrt(ncol(covered)) * 100,
+    single = mean(covered[k,]) * 100,
+    sd_single = sd(covered[k,]) / sqrt(ncol(covered)) * 100
+  )
+}
+```
+
+```{r, compute_coverage_boot, echo = F}
+coverage_resized_boot <- function(alpha, k){
+  if(length(error) >= 1){
+    index <- (1:nsubsample)[-error]
+  }else{
+    index <- 1:nsubsample
+  }
+  covered <- matrix(0, 17, length(index))
+  for(i in 1:length(index)){
+    ci <- compute_boot_ci(fit_boot_store[[index[i]]], alpha)
+    covered[,i] <- fit_full$coef[-1] < ci$upper[-1] & fit_full$coef[-1] > ci$lower[-1]
+  }
+  list(
+    avg = mean(covered) * 100,
+    sd = sd(colMeans(covered)) / sqrt(ncol(covered)) * 100,
+    single = mean(covered[k,]) * 100,
+    sd_single = sd(covered[k,]) / sqrt(ncol(covered)) * 100
+  )
+}
+```
+
+We report 1. the proportion of variables covered by the CI in a *single-shot experiment* and 2. the proportion of times the variable `systolic blood pressure` is covered.
+
+```{r, compute_coverage, echo = F}
+alphas <- c(0.95, 0.9, 0.8)
+k=8
+covered_single <- matrix(0, 3, 4)
+covered_bulk <- matrix(0, 3, 4)
+for(i in 1:3){
+  prop <- coverage_classical(alphas[i], k)
+  covered_bulk[i, 1] <- prop$avg
+  covered_bulk[i, 2] <- prop$sd
+  covered_single[i, 1] <- prop$single
+  covered_single[i, 2] <- prop$sd_single
+  
+  prop_boot <- coverage_resized_boot(alphas[i], k)
+  covered_bulk[i, 3] <- prop_boot$avg
+  covered_bulk[i, 4] <- prop_boot$sd
+  covered_single[i, 3] <- prop_boot$single
+  covered_single[i, 4] <- prop_boot$sd_single
+}
+
+rownames(covered_single) <- c("95%", '90%', '80%')
+colnames(covered_single) <- c('Mean - Classical','SD - Classical', 'Mean - Resized Boot', "SD - Resized Boot")
+
+rownames(covered_bulk) <- c("95%", '90%', '80%')
+colnames(covered_bulk) <- c('Mean - Classical','SD - Classical', 'Mean - Resized Boot', "SD - Resized Boot")
+
+knitr::kable(covered_single, digits = 2, caption = "Coverage proportion of a single variable (SBP)")
+
+knitr::kable(covered_bulk, digits = 2, caption = "Coverage proportion in a single-shot experiment")
+```

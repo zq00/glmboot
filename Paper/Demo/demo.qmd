@@ -1,0 +1,212 @@
+---
+title: "Resized booststrap demo"
+format: html
+author: "Qian Zhao"
+date: '2022-07-08'
+editor: visual
+---
+
+```{r, setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.align = "center", fig.width = 4, fig.height = 3)
+library(tidyverse)
+library(glmhd)
+fileloc <- "/Users/zq/Desktop/Topics/glm_boot/paper/code/Arxiv/R/"
+filename = list.files(path=fileloc, pattern = "*.R")
+sourcefile = sapply(filename, function(t) paste0(fileloc, t))
+sapply(sourcefile, source, .GlobalEnv)
+```
+
+We demonstrate the resized bootstrap method by studying a logistic regression where the covariates are from a multivariate $t$-distribution. We set the number of variables to be $p=200$ and the number of observations to be $n = 2000$ ($\kappa = p/n = 0.1$).
+
+```{r, param}
+n <- 2000; p <- 200
+```
+
+We now set up the covariance matrix and write a function to sample the covariates.
+
+```{r, setup_sim}
+# set the covariance matrix to be a circular matrix
+rho <- 0.5
+x <- rho^(c(0:(p/2), (p/2-1):1))
+Sigma <- toeplitz(x)
+R <- chol(Sigma)
+
+# the MVT has 8 degrees of freedom
+nu <- 8
+```
+
+```{r, sample_x}
+sample_x <- function(){
+  X <- matrix(rnorm(n*p, 0, 1), n, p) 
+  chi <- rchisq(n, df = nu) / (nu - 2)
+  X <- X %*% R / sqrt(chi) / sqrt(p)
+}
+```
+
+Then, we randomly generate coefficients and we sample the response from a logistic model.
+
+```{r, sample_beta}
+beta <- numeric(p)
+nonnull <- sample(1:p, 20, replace = F)
+beta[nonnull] <- rnorm(20, 5, 1) * sample(c(-1, 1), size = 20, replace = T)
+```
+
+```{r, sample_y}
+sample_y <- function(X, beta){
+  mu <- 1 / ( 1 + exp(-X %*% beta))
+  Y <- rbinom(n, 1, mu)
+  Y
+}
+```
+
+We repeat this experiment 200 times to compute the bias and standard deviation of the MLE.
+
+```{r}
+B <- 200
+BetaHat <- matrix(0, B, p)
+StdR <- matrix(0, B, p)
+for(b in 1:B){
+  X <- sample_x()
+  Y <- sample_y(X, beta)
+  fit <- glm(Y ~ X + 0, family = binomial)
+  StdR[b, ] <- summary(fit)$coef[ ,2]
+  BetaHat[b, ] <- fit$coef
+  
+ # cat(b, ",")
+}
+```
+
+### Bias and std.dev of the MLE
+
+According to classical theory, the average MLE should be approximately the true model coefficient. We also show a line with zero intercept and unit slope. We can see that the absolute value of the MLE is biased upwards.
+
+```{r, echo = F}
+ggplot() + geom_point(aes(x = beta[nonnull], y = colMeans(BetaHat)[nonnull])) + 
+  geom_abline(slope = 1, intercept = 0) + 
+  xlab("True coefficients") + 
+  ylab("Average MLE") + 
+  theme_bw()
+```
+
+Next, we compare the empirical standard deviation of the MLE with the estimate by R. We observe that the classical theory underestimates the standard deviation of the MLE.
+
+```{r, echo = F}
+ggplot() + 
+  geom_point(aes(x = colMeans(StdR), y = apply(BetaHat, 2, sd))) + 
+  geom_abline(slope = 1, intercept = 0) + 
+  xlab("Estimated Std.Dev by R") + 
+  ylab("Empirical Std.Dev") + 
+  theme_bw()
+```
+
+### High-dimensional theory
+
+We compute estimated bias and standard deviation from the high-dimensional theory.
+
+```{r}
+gamma <- sqrt(beta %*% (Sigma %*% beta) / p) # the covariance matrix of X is Sigma
+
+# solve the parameter in the high-dimensional theory
+params <- find_param(kappa = p/n, gamma = gamma, beta0 = 0, intercept = F)
+# compute tau
+tau <- 1 / sqrt(diag(solve(Sigma)))
+# compute the theoretical std
+std_theory <- params[3] / tau
+# empirical std
+std_empirical <- apply(BetaHat, 2, sd)
+```
+
+The covariance matrix is special in that the theoretical standard deviation are equal for every coordinate, so we plot a histogram of the empirical standard deviation and show the theoretical value by the black line. Since we observe that the theoretical Std. Dev underestimates the empirical Std.Dev, we expect that the CI using the high-dimensional theory would undercover true model coefficients.
+
+```{r}
+ggplot() + geom_histogram(aes(x = std_empirical), bins = 25) + 
+  geom_vline(xintercept = std_theory[1]) + 
+  xlab("Empirical Std.Dev of the MLE") + 
+  theme_bw()
+```
+
+### The resized bootstrap method
+
+We now apply the resized bootstrap for *one* observed sample. Remember that we want to choose $\beta^s = s \times \hat{\beta}$ such that 
+$$
+\mathrm{Var}(X^\top \beta) = \beta^{s\top} \Sigma \beta^s / p = \gamma^2. 
+$$ 
+This implies 
+
+$$
+s^2 = \frac{\gamma^2}{\hat{\beta}^\top \Sigma \hat{\beta} / p}. 
+$$
+
+```{r, sample_new}
+# Obtain one sample
+X <- sample_x()
+Y <- sample_y(X, beta)
+fit <- glm(Y ~ X + 0, family = binomial, x = T, y = T)
+beta_hat <- fit$coef
+```
+
+```{r, beta_s}
+# Compute s
+s <- gamma / sqrt(t(beta_hat) %*% (Sigma %*% beta_hat) / p)
+# Compute the resized coefficient beta_s
+beta_s <- s[1,1] * beta_hat 
+```
+
+After computing $s$, we generate bootstrap samples and compute the bootstrap MLE.
+
+```{r}
+B <- 100
+bootSample <- matrix(0, B, p)
+for(b in 1:B){
+  mub <- 1/(1+exp(-X%*%beta_s))
+  Yb <- rbinom(n, 1, mub)
+  
+  fit_b <- glm(Yb ~ X + 0, family = binomial)
+  bootSample[b, ] <- fit_b$coef
+  # if(b %% 5 == 0) cat(b, ",")
+}
+```
+
+We estimate the bias and the variance using the bootstrap sample.
+
+```{r}
+# standard deviation
+std_boot <- apply(bootSample, 2, sd)
+# estimate the bias
+alpha_boot <- lm(colMeans(bootSample) ~ beta_s, weights = 1/std_boot^2)$coef
+```
+
+We can compare the average Std. Dev estimated using the resized bootstrap with the empirical Std. Dev and we see that they are similar.
+
+```{r}
+mean(std_boot)
+mean(std_empirical)
+```
+
+Above, we assume that the true signal strength $\gamma$ is known, but in reality we need to estimate $\gamma$. The `glm_boot` function estimates $\gamma$ and implements the resized bootstrap method using the estimated $\gamma$.
+
+```{r}
+fit_boot <- glm_boot(fit, b_boot = 100, verbose = F)
+```
+
+We can compute the estimated bias and the Std. Dev using the resized bootstrap method. In the figure below ,the red line shows the estimated bias using the resized bootstrap method.
+
+```{r, echo = F}
+ggplot() + geom_point(aes(x = beta[nonnull], y = colMeans(BetaHat)[nonnull])) + 
+  geom_abline(slope = 1, intercept = 0) + 
+  geom_abline(slope = fit_boot$alpha, intercept = 0, color = "red") +
+  xlab("True coefficients") + 
+  ylab("Average MLE") + 
+  theme_bw()
+```
+
+Next, we compare the empirical standard deviation of the MLE with the estimate by the resized bootstrap. The estimated signal strength is `r fit_boot$gamma_hat` (the true \$\gamma = \$`r gamma`). The resized bootstrap provides a more accurate estimate of the Std. Dev compared to the classical or high-dimensional theory.
+
+```{r, echo = F}
+ggplot() + 
+  geom_point(aes(x = fit_boot$sd, y = apply(BetaHat, 2, sd))) + 
+  geom_abline(slope = 1, intercept = 0) + 
+  xlab("Estimated Std.Dev using resized bootstrap") + 
+  ylab("Empirical Std.Dev") + 
+  theme_bw()
+```

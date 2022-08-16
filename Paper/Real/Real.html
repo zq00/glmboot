@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.0.14">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Qian Zhao">
+<meta name="dcterms.date" content="2022-07-08">
+
+<title>Real data example</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="Real_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Real_files/libs/quarto-html/quarto.js"></script>
+<script src="Real_files/libs/quarto-html/popper.min.js"></script>
+<script src="Real_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Real_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Real_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Real_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Real_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Real_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Real_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Real data example</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Qian Zhao </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">July 8, 2022</p>
+    </div>
+  </div>
+    
+  </div>
+  
+
+</header>
+
+<div class="cell">
+
+</div>
+<p>In Section 5 we apply the resized bootstrap procedure to a real data. Researchers want to understand which factors are associated with restrictive spirometry pattern (RSP). They are particularly interested in the relationship between kidney function and RSP, and they hypothesize that glomerular hyperfiltration (GHF) may be associated with RSP risk.</p>
+<p>They collected data from participants in Korea National Health and Nutrition Examination Survey <em>(</em>KNHANES) from 2009-2015. The outcome variable in this study is RSP (defined as FVC <span class="math inline">\(&lt;\)</span> 80% in predicted value AND FEV1/FVC <span class="math inline">\(\geq\)</span> 0.7 <a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>) and the covariates include demographic variables, medical history, medications used, and a variety of health-related variables.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>dataloc <span class="ot">&lt;-</span> <span class="st">"/Users/zq/Desktop/Topics/glm_boot/paper/code/Arxiv/Data/"</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>rsp <span class="ot">&lt;-</span> <span class="fu">read_excel</span>(<span class="fu">paste0</span>(dataloc, <span class="st">"/rsp.xlsx"</span>), <span class="at">na =</span> <span class="st">"."</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>pos <span class="ot">&lt;-</span> rsp<span class="sc">$</span>HE_FVCp <span class="sc">&lt;</span> <span class="dv">80</span> <span class="sc">&amp;</span> rsp<span class="sc">$</span>HE_FEV1FVC <span class="sc">&gt;</span> <span class="fl">0.7</span> <span class="co"># positive obs</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell" data-result="false">
+
+</div>
+<section id="fitting-logistic-regression-on-full-data" class="level2">
+<h2 class="anchored" data-anchor-id="fitting-logistic-regression-on-full-data">Fitting logistic regression on full data</h2>
+<p>Since I will fit a logistic regression using a smaller sample size later (sample size <span class="math inline">\(n=200\)</span>), I remove the variables that have smaller than 5% occurance in the positive or negative class (therefore I remove Proteinuria, Previous cardiovascular disease, Pulmondary TB, Atopic dermatitis, Bronchial asthma, Glomerular hyperfiltration).</p>
+<p>I also standardize the variables before running GLM.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>var <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"SMK_CRNT"</span>, <span class="st">"DNK_HIGH"</span>, <span class="st">"EDU_HIGH"</span>, <span class="st">"INCM_HIGH"</span>,<span class="st">"STRESS_HIGH"</span>, </span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>         <span class="st">"A_AGE"</span>, <span class="st">"A_SEX"</span>,  <span class="st">"HE_SBP"</span>, <span class="st">"HE_DBP"</span>, <span class="st">"LAB_GLU_SI"</span>,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>         <span class="st">"TB_DX"</span>, <span class="st">"LAB_TG_SI"</span>, <span class="st">"LAB_HDL_SI"</span>, <span class="st">"HE_WC"</span>, <span class="st">"LAB_WBC"</span>,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>         <span class="st">"LAB_HB"</span>, <span class="st">"AR_DX"</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>data_full <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(rsp[,var],<span class="at">pos =</span> pos) <span class="sc">%&gt;%</span> <span class="fu">drop_na</span>()</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>pos_index <span class="ot">&lt;-</span> <span class="fu">which</span>(data_full<span class="sc">$</span>pos)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>data_full_standardized <span class="ot">&lt;-</span> data_full</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>data_full_standardized[,<span class="sc">!</span><span class="fu">names</span>(data_full_standardized) <span class="sc">==</span> <span class="st">"pos"</span>] <span class="ot">&lt;-</span> <span class="fu">scale</span>(data_full_standardized[,<span class="sc">!</span><span class="fu">names</span>(data_full_standardized) <span class="sc">==</span> <span class="st">"pos"</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>fit_full <span class="ot">&lt;-</span> <span class="fu">glm</span>(pos<span class="sc">~</span>., <span class="at">data=</span>data_full_standardized, <span class="at">family =</span> binomial)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="fitting-logistic-regression-on-one-smaller-sample" class="level2">
+<h2 class="anchored" data-anchor-id="fitting-logistic-regression-on-one-smaller-sample">Fitting logistic regression on one smaller sample</h2>
+<p>I now fit the logistic regression on a smaller sample of size <span class="math inline">\(n=200\)</span>. first select <span class="math inline">\(N=4800\)</span> observations (which includes all of the positive cases), then I create 24 subsets of size <span class="math inline">\(n=200\)</span>. I fit an MLE in one sub-sample and compare the confidence interval using classical theory and the resized bootstrap.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">50</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>N <span class="ot">&lt;-</span> <span class="dv">4800</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="dv">200</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>nsubsample <span class="ot">&lt;-</span> <span class="dv">24</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>subset <span class="ot">&lt;-</span> <span class="fu">c</span>(pos_index,<span class="fu">sample</span>((<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(data_full))[<span class="sc">-</span>pos_index] , N<span class="sc">-</span><span class="fu">length</span>(pos_index), <span class="at">replace =</span> F))</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>ind <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span>N, N, <span class="at">replace =</span> F), <span class="at">nrow =</span> nsubsample, <span class="at">ncol =</span> n)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>data_small <span class="ot">&lt;-</span> data_full[subset[ind[<span class="dv">1</span>, ]],]</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>data_small[,<span class="sc">!</span><span class="fu">names</span>(data_small) <span class="sc">==</span> <span class="st">"pos"</span>] <span class="ot">&lt;-</span> <span class="fu">scale</span>(data_small[,<span class="sc">!</span><span class="fu">names</span>(data_small) <span class="sc">==</span> <span class="st">"pos"</span>])</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>data_small <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="dv">1</span>, data_small )</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>fit_small <span class="ot">&lt;-</span> <span class="fu">glm</span>(pos <span class="sc">~</span> . <span class="sc">+</span> <span class="dv">0</span> , <span class="at">data =</span> data_small, <span class="at">family =</span> binomial, <span class="at">x=</span>T, <span class="at">y =</span> T) <span class="co"># fit MLE</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>boot_small <span class="ot">&lt;-</span> <span class="fu">boot_fit_master</span>(fit_small, <span class="at">B =</span> <span class="dv">1000</span>) <span class="co"># resized bootstrap</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># function to compute the lower and upper CI</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>compute_boot_ci <span class="ot">&lt;-</span> <span class="cf">function</span>(bootfit, level){</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>   q_up <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">+</span> level)<span class="sc">/</span><span class="dv">2</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>   q_low <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> level) <span class="sc">/</span> <span class="dv">2</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>   bootsample_adj <span class="ot">&lt;-</span> (bootfit<span class="sc">$</span>boot_sample <span class="sc">-</span> bootfit<span class="sc">$</span>alpha <span class="sc">*</span> bootfit<span class="sc">$</span>beta_s)<span class="sc">/</span>bootfit<span class="sc">$</span>sd_boot</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>   lower <span class="ot">&lt;-</span> (bootfit<span class="sc">$</span>mle <span class="sc">-</span> <span class="fu">apply</span>(bootsample_adj, <span class="dv">1</span>, <span class="cf">function</span>(t) <span class="fu">quantile</span>(t, q_up)) <span class="sc">*</span> bootfit<span class="sc">$</span>sd_boot) <span class="sc">/</span> bootfit<span class="sc">$</span>alpha</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>   upper <span class="ot">&lt;-</span> (bootfit<span class="sc">$</span>mle <span class="sc">-</span> <span class="fu">apply</span>(bootsample_adj, <span class="dv">1</span>, <span class="cf">function</span>(t) <span class="fu">quantile</span>(t, q_low)) <span class="sc">*</span> bootfit<span class="sc">$</span>sd_boot) <span class="sc">/</span> bootfit<span class="sc">$</span>alpha</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>   <span class="fu">list</span>(<span class="at">lower =</span> lower, <span class="at">upper =</span> upper)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The bootstrap method brings the CI closer to the large sample estimates</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>alpha <span class="ot">&lt;-</span> <span class="fl">0.95</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>lower_classical <span class="ot">&lt;-</span> fit_small<span class="sc">$</span>coef <span class="sc">-</span> <span class="fu">qnorm</span>(<span class="fl">0.5</span> <span class="sc">+</span> alpha<span class="sc">/</span><span class="dv">2</span>) <span class="sc">*</span> <span class="fu">summary</span>(fit_small)<span class="sc">$</span>coef[, <span class="dv">2</span>]</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>upper_classical <span class="ot">&lt;-</span> fit_small<span class="sc">$</span>coef <span class="sc">+</span> <span class="fu">qnorm</span>(<span class="fl">0.5</span> <span class="sc">+</span> alpha<span class="sc">/</span><span class="dv">2</span>) <span class="sc">*</span> <span class="fu">summary</span>(fit_small)<span class="sc">$</span>coef[, <span class="dv">2</span>]</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>boot_ci <span class="ot">&lt;-</span> <span class="fu">compute_boot_ci</span>(boot_small, alpha)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+
+</div>
+<div class="cell" data-fid.height="7">
+<div class="cell-output-display">
+<p><img src="Real_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid" width="768"></p>
+</div>
+</div>
+</section>
+<section id="fit-logistic-mle-on-all-of-the-subsets" class="level2">
+<h2 class="anchored" data-anchor-id="fit-logistic-mle-on-all-of-the-subsets">Fit logistic MLE on all of the subsets</h2>
+<p>We repeat the process for each individual subset in order to study the bias, variance of the MLE.</p>
+<section id="computing-mle-in-each-subset" class="level3">
+<h3 class="anchored" data-anchor-id="computing-mle-in-each-subset">Computing MLE in each subset</h3>
+<p>We now compute the MLE, as well as the resized bootstrap, for each sub-sample of size <span class="math inline">\(n = 200\)</span>.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">ncol</span>(data_full) <span class="sc">-</span> <span class="dv">1</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>mle_s <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">0</span>, p <span class="sc">+</span> <span class="dv">1</span>, nsubsample)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>sd_mle <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">0</span>, p <span class="sc">+</span> <span class="dv">1</span>, nsubsample)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>sep <span class="ot">&lt;-</span> <span class="cn">NULL</span> <span class="co"># store subset index where the logistic regression reports an error </span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>B <span class="ot">&lt;-</span> <span class="dv">1000</span> <span class="co"># number of bootstrap repetitions</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>alpha_boot <span class="ot">&lt;-</span> <span class="fu">numeric</span>(nsubsample)</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>sd_boot <span class="ot">&lt;-</span> <span class="fu">matrix</span>(<span class="dv">0</span>, nsubsample, p <span class="sc">+</span> <span class="dv">1</span>)</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>bootsample <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>fit_boot_store <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>error <span class="ot">&lt;-</span> <span class="cn">NULL</span> <span class="co"># store error of resized bootstrap </span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>nsubsample){</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>  data_small <span class="ot">&lt;-</span> data_full[subset[ind[i, ]],]</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>  data_small[,<span class="sc">!</span><span class="fu">names</span>(data_full_standardized) <span class="sc">==</span> <span class="st">"pos"</span>] <span class="ot">&lt;-</span> <span class="fu">scale</span>(data_small[,<span class="sc">!</span><span class="fu">names</span>(data_full_standardized) <span class="sc">==</span> <span class="st">"pos"</span>])</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>  data_small <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="dv">1</span>, data_small)</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>  fit <span class="ot">&lt;-</span> <span class="fu">tryCatch</span>(<span class="at">error=</span> <span class="cf">function</span>(e) {<span class="fu">cat</span>(i, <span class="st">"E!</span><span class="sc">\t</span><span class="st">"</span>); <span class="fu">return</span>(<span class="sc">-</span><span class="dv">1</span>)}, <span class="fu">glm</span>(pos <span class="sc">~</span> . <span class="sc">+</span> <span class="dv">0</span> , <span class="at">data =</span> data_small, <span class="at">family =</span> binomial, <span class="at">x=</span>T, <span class="at">y =</span> T))</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">length</span>(fit) <span class="sc">==</span> <span class="dv">1</span> ){sep <span class="ot">&lt;-</span> <span class="fu">c</span>(sep, i); error <span class="ot">&lt;-</span> <span class="fu">c</span>(error,i); <span class="cf">next</span>; }<span class="cf">else</span>{</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    mle_s[,i] <span class="ot">&lt;-</span> fit<span class="sc">$</span>coef</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>    sd_mle[,i] <span class="ot">&lt;-</span> <span class="fu">summary</span>(fit)<span class="sc">$</span>coef[,<span class="dv">2</span>]</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>  fit_boot <span class="ot">&lt;-</span>  <span class="fu">tryCatch</span>(<span class="at">error=</span> <span class="cf">function</span>(e) {<span class="fu">cat</span>(i, <span class="st">"E!</span><span class="sc">\t</span><span class="st">"</span>); <span class="fu">return</span>(<span class="sc">-</span><span class="dv">1</span>)}, <span class="fu">boot_fit_master</span>(fit, B))</span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">length</span>(fit_boot) <span class="sc">==</span> <span class="dv">1</span>) {error <span class="ot">&lt;-</span> <span class="fu">c</span>(error, i); <span class="cf">next</span>;}</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>  fit_boot_store[[i]] <span class="ot">&lt;-</span> fit_boot</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>  sd_boot[i, ] <span class="ot">&lt;-</span> <span class="fu">apply</span>(fit_boot<span class="sc">$</span>boot_sample, <span class="dv">1</span>, sd)</span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>  mean_ap <span class="ot">&lt;-</span> <span class="fu">apply</span>(fit_boot<span class="sc">$</span>boot_sample, <span class="dv">1</span>, mean)</span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>  alpha_boot[i] <span class="ot">&lt;-</span> <span class="fu">lm</span>(mean_ap <span class="sc">~</span> fit_boot<span class="sc">$</span>beta_s <span class="sc">+</span> <span class="dv">0</span>, <span class="at">weights =</span> <span class="dv">1</span><span class="sc">/</span>sd_boot[i, ]<span class="sc">^</span><span class="dv">2</span>)<span class="sc">$</span>coef</span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>  bootsample[[i]] <span class="ot">&lt;-</span> fit_boot<span class="sc">$</span>boot_sample</span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>No signal! </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="fu">length</span>(sep) <span class="sc">&gt;=</span> <span class="dv">1</span>){</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  mle_s <span class="ot">&lt;-</span> mle_s[,<span class="sc">-</span>sep]</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  sd_mle <span class="ot">&lt;-</span> sd_mle[,<span class="sc">-</span>sep]</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="fu">length</span>(error) <span class="sc">&gt;=</span> <span class="dv">1</span>){</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  alpha_boot <span class="ot">&lt;-</span> alpha_boot[<span class="sc">-</span>error]</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  sd_boot <span class="ot">&lt;-</span> sd_boot[<span class="sc">-</span>error, ]</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The number of times the MLE does not exist is 0 and the number of times the resized bootstrap fails is 1.</p>
+</section>
+<section id="bias-of-the-mle" class="level3">
+<h3 class="anchored" data-anchor-id="bias-of-the-mle">Bias of the MLE</h3>
+<p>We plot the average MLE (in sub-samples) versus the MLE using the full data (the full data contains 21880 observations). The MLE in the small subset slightly over-estimates the large sample coefficient which we would get if we fit a logistic regression using the full data. The resized bootstrap method estimates a bias of 1.1337506 (averaged over all the repetitions).</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Real_files/figure-html/plot_bias-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="std.dev-of-the-mle" class="level3">
+<h3 class="anchored" data-anchor-id="std.dev-of-the-mle">Std.dev of the MLE</h3>
+<p>Next, we plot the standard deviation of the MLE, showing the estimates using classical theory (results from the <code>glm</code> function), using resized bootstrap, as well as the empirical std.dev from repeated sampling (here, we take 24 sub-samples in total)</p>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="Real_files/figure-html/plot_std-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="coverage-proportion" class="level3">
+<h3 class="anchored" data-anchor-id="coverage-proportion">Coverage proportion</h3>
+<p>Finally, we compute the coverage property of the resized bootstrap method.</p>
+<div class="cell">
+
+</div>
+<div class="cell">
+
+</div>
+<p>We report 1. the proportion of variables covered by the CI in a <em>single-shot experiment</em> and 2. the proportion of times the variable <code>systolic blood pressure</code> is covered.</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="table table-sm table-striped">
+<caption>Coverage proportion of a single variable (SBP)</caption>
+<colgroup>
+<col style="width: 5%">
+<col style="width: 22%">
+<col style="width: 20%">
+<col style="width: 27%">
+<col style="width: 24%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: right;">Mean - Classical</th>
+<th style="text-align: right;">SD - Classical</th>
+<th style="text-align: right;">Mean - Resized Boot</th>
+<th style="text-align: right;">SD - Resized Boot</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">95%</td>
+<td style="text-align: right;">87.50</td>
+<td style="text-align: right;">6.90</td>
+<td style="text-align: right;">91.30</td>
+<td style="text-align: right;">6.01</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">90%</td>
+<td style="text-align: right;">87.50</td>
+<td style="text-align: right;">6.90</td>
+<td style="text-align: right;">86.96</td>
+<td style="text-align: right;">7.18</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">80%</td>
+<td style="text-align: right;">83.33</td>
+<td style="text-align: right;">7.77</td>
+<td style="text-align: right;">82.61</td>
+<td style="text-align: right;">8.08</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="cell-output-display">
+<table class="table table-sm table-striped">
+<caption>Coverage proportion in a single-shot experiment</caption>
+<colgroup>
+<col style="width: 5%">
+<col style="width: 22%">
+<col style="width: 20%">
+<col style="width: 27%">
+<col style="width: 24%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: right;">Mean - Classical</th>
+<th style="text-align: right;">SD - Classical</th>
+<th style="text-align: right;">Mean - Resized Boot</th>
+<th style="text-align: right;">SD - Resized Boot</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">95%</td>
+<td style="text-align: right;">92.16</td>
+<td style="text-align: right;">1.26</td>
+<td style="text-align: right;">94.88</td>
+<td style="text-align: right;">1.19</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">90%</td>
+<td style="text-align: right;">85.78</td>
+<td style="text-align: right;">1.58</td>
+<td style="text-align: right;">88.24</td>
+<td style="text-align: right;">1.43</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">80%</td>
+<td style="text-align: right;">72.30</td>
+<td style="text-align: right;">1.89</td>
+<td style="text-align: right;">74.68</td>
+<td style="text-align: right;">1.71</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+</section>
+
+
+<div id="quarto-appendix" class="default"><section class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1" role="doc-endnote"><p>FVC is forced vital capacity and FEV1 is forced expiratory volume in one second<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    toggleBodyColorMode(window.document.querySelector("link#quarto-bootstrap"));
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    setTimeout(function() {
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      let href = ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const cites = ref.parentNode.getAttribute('data-cites').split(' ');
+    tippyHover(ref, function() {
+      var popup = window.document.createElement('div');
+      cites.forEach(function(cite) {
+        var citeDiv = window.document.createElement('div');
+        citeDiv.classList.add('hanging-indent');
+        citeDiv.classList.add('csl-entry');
+        var biblioDiv = window.document.getElementById('ref-' + cite);
+        if (biblioDiv) {
+          citeDiv.innerHTML = biblioDiv.innerHTML;
+        }
+        popup.appendChild(citeDiv);
+      });
+      return popup.innerHTML;
+    });
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
