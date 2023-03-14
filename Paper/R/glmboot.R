@@ -19,9 +19,6 @@
 #' \item sd The estimated std.dev of the MLE
 #' \item boot_sample Bootstrap samples 
 #' }
-#' NOTES
-# Deleted the SLOE argument -- always use SLOE to estimate the signal strength
-# Deleted beta_b from the output
 glm_boot <- function(glm_fit, s_interval = 0.02, b_var = 5, b_boot = 100, robust_est = FALSE, verbose = TRUE, filename = NA){
   # 1. Extract X, Y and MLE from the glm 
   family <- glm_fit$family # family and link 
