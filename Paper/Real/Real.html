@@ -145,8 +145,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="cell" data-result="false">
 
 </div>
-<section id="fitting-logistic-regression-on-full-data" class="level2">
-<h2 class="anchored" data-anchor-id="fitting-logistic-regression-on-full-data">Fitting logistic regression on full data</h2>
+<section id="fitting-a-logistic-regression-on-full-data" class="level2">
+<h2 class="anchored" data-anchor-id="fitting-a-logistic-regression-on-full-data">Fitting a logistic regression on full data</h2>
 <p>Since I will fit a logistic regression using a smaller sample size later (sample size <span class="math inline">\(n=200\)</span>), I remove the variables that have smaller than 5% occurance in the positive or negative class (therefore I remove Proteinuria, Previous cardiovascular disease, Pulmondary TB, Atopic dermatitis, Bronchial asthma, Glomerular hyperfiltration).</p>
 <p>I also standardize the variables before running GLM.</p>
 <div class="cell">
@@ -241,16 +241,20 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>    sd_mle[,i] <span class="ot">&lt;-</span> <span class="fu">summary</span>(fit)<span class="sc">$</span>coef[,<span class="dv">2</span>]</span>
 <span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>  }</span>
 <span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>  fit_boot <span class="ot">&lt;-</span>  <span class="fu">tryCatch</span>(<span class="at">error=</span> <span class="cf">function</span>(e) {<span class="fu">cat</span>(i, <span class="st">"E!</span><span class="sc">\t</span><span class="st">"</span>); <span class="fu">return</span>(<span class="sc">-</span><span class="dv">1</span>)}, <span class="fu">boot_fit_master</span>(fit, B))</span>
-<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">length</span>(fit_boot) <span class="sc">==</span> <span class="dv">1</span>) {error <span class="ot">&lt;-</span> <span class="fu">c</span>(error, i); <span class="cf">next</span>;}</span>
-<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>  fit_boot_store[[i]] <span class="ot">&lt;-</span> fit_boot</span>
-<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>  sd_boot[i, ] <span class="ot">&lt;-</span> <span class="fu">apply</span>(fit_boot<span class="sc">$</span>boot_sample, <span class="dv">1</span>, sd)</span>
-<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>  mean_ap <span class="ot">&lt;-</span> <span class="fu">apply</span>(fit_boot<span class="sc">$</span>boot_sample, <span class="dv">1</span>, mean)</span>
-<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>  alpha_boot[i] <span class="ot">&lt;-</span> <span class="fu">lm</span>(mean_ap <span class="sc">~</span> fit_boot<span class="sc">$</span>beta_s <span class="sc">+</span> <span class="dv">0</span>, <span class="at">weights =</span> <span class="dv">1</span><span class="sc">/</span>sd_boot[i, ]<span class="sc">^</span><span class="dv">2</span>)<span class="sc">$</span>coef</span>
-<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>  bootsample[[i]] <span class="ot">&lt;-</span> fit_boot<span class="sc">$</span>boot_sample</span>
-<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>  fit_boot <span class="ot">&lt;-</span> <span class="fu">boot_fit_master</span>(fit, B)</span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>  <span class="co"># fit_boot &lt;-  tryCatch(error= function(e) {cat(i, "E!\t"); return(-1)}, boot_fit_master(fit, B))</span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span>(<span class="fu">length</span>(fit_boot) <span class="sc">==</span> <span class="dv">1</span>) {error <span class="ot">&lt;-</span> <span class="fu">c</span>(error, i); <span class="cf">next</span>;}</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>  fit_boot_store[[i]] <span class="ot">&lt;-</span> fit_boot</span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>  sd_boot[i, ] <span class="ot">&lt;-</span> <span class="fu">apply</span>(fit_boot<span class="sc">$</span>boot_sample, <span class="dv">1</span>, sd)</span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>  mean_ap <span class="ot">&lt;-</span> <span class="fu">apply</span>(fit_boot<span class="sc">$</span>boot_sample, <span class="dv">1</span>, mean)</span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>  alpha_boot[i] <span class="ot">&lt;-</span> <span class="fu">lm</span>(mean_ap <span class="sc">~</span> fit_boot<span class="sc">$</span>beta_s <span class="sc">+</span> <span class="dv">0</span>, <span class="at">weights =</span> <span class="dv">1</span><span class="sc">/</span>sd_boot[i, ]<span class="sc">^</span><span class="dv">2</span>)<span class="sc">$</span>coef</span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>  bootsample[[i]] <span class="ot">&lt;-</span> fit_boot<span class="sc">$</span>boot_sample</span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>No signal! </code></pre>
+<pre><code>No signal! 
+No signal! 
+No signal! 
+No signal! </code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="fu">length</span>(sep) <span class="sc">&gt;=</span> <span class="dv">1</span>){</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  mle_s <span class="ot">&lt;-</span> mle_s[,<span class="sc">-</span>sep]</span>
@@ -261,11 +265,11 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  sd_boot <span class="ot">&lt;-</span> sd_boot[<span class="sc">-</span>error, ]</span>
 <span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>The number of times the MLE does not exist is 0 and the number of times the resized bootstrap fails is 1.</p>
+<p>The number of times the MLE does not exist is 0 and the number of times the resized bootstrap fails is 0. The sample that causes an error is .</p>
 </section>
 <section id="bias-of-the-mle" class="level3">
 <h3 class="anchored" data-anchor-id="bias-of-the-mle">Bias of the MLE</h3>
-<p>We plot the average MLE (in sub-samples) versus the MLE using the full data (the full data contains 21880 observations). The MLE in the small subset slightly over-estimates the large sample coefficient which we would get if we fit a logistic regression using the full data. The resized bootstrap method estimates a bias of 1.1337506 (averaged over all the repetitions).</p>
+<p>We plot the average MLE (in sub-samples) versus the MLE using the full data (the full data contains 21880 observations). The MLE in the small subset slightly over-estimates the large sample coefficient which we would get if we fit a logistic regression using the full data. The resized bootstrap method estimates a bias of 1.137328 (averaged over all the repetitions).</p>
 <div class="cell">
 <div class="cell-output-display">
 <p><img src="Real_files/figure-html/plot_bias-1.png" class="img-fluid" width="672"></p>
@@ -316,22 +320,22 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <td style="text-align: left;">95%</td>
 <td style="text-align: right;">87.50</td>
 <td style="text-align: right;">6.90</td>
-<td style="text-align: right;">91.30</td>
-<td style="text-align: right;">6.01</td>
+<td style="text-align: right;">91.67</td>
+<td style="text-align: right;">5.76</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">90%</td>
 <td style="text-align: right;">87.50</td>
 <td style="text-align: right;">6.90</td>
-<td style="text-align: right;">86.96</td>
-<td style="text-align: right;">7.18</td>
+<td style="text-align: right;">87.50</td>
+<td style="text-align: right;">6.90</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">80%</td>
 <td style="text-align: right;">83.33</td>
 <td style="text-align: right;">7.77</td>
-<td style="text-align: right;">82.61</td>
-<td style="text-align: right;">8.08</td>
+<td style="text-align: right;">83.33</td>
+<td style="text-align: right;">7.77</td>
 </tr>
 </tbody>
 </table>
@@ -360,22 +364,22 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <td style="text-align: left;">95%</td>
 <td style="text-align: right;">92.16</td>
 <td style="text-align: right;">1.26</td>
-<td style="text-align: right;">94.88</td>
-<td style="text-align: right;">1.19</td>
+<td style="text-align: right;">94.85</td>
+<td style="text-align: right;">1.14</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">90%</td>
 <td style="text-align: right;">85.78</td>
 <td style="text-align: right;">1.58</td>
 <td style="text-align: right;">88.24</td>
-<td style="text-align: right;">1.43</td>
+<td style="text-align: right;">1.37</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">80%</td>
 <td style="text-align: right;">72.30</td>
 <td style="text-align: right;">1.89</td>
-<td style="text-align: right;">74.68</td>
-<td style="text-align: right;">1.71</td>
+<td style="text-align: right;">75.25</td>
+<td style="text-align: right;">1.70</td>
 </tr>
 </tbody>
 </table>

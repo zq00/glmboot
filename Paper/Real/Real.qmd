@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE, message = F, warning = F)
 library(readxl)
 library(tidyverse)
 library(glmhd)
-fileloc <- "/Users/zq/Desktop/Topics/glm_boot/paper/code/Arxiv/R/"
+fileloc <- "/R/"
 filename = list.files(path=fileloc, pattern = "*.R")
 sourcefile = sapply(filename, function(t) paste0(fileloc, t))
 sapply(sourcefile, source, .GlobalEnv)
@@ -23,9 +23,10 @@ rms <- function(t) sqrt(sum(t^2) / length(t))
 boot_fit_master <- function(fit, B){
   gamma_hat <- numeric(10)
   for(i in 1:10){
-    boot_fit <- tryCatch(glm_boot(fit, b_boot = 10, verbose = F), 
-                         error = function(e) return(-1))
-    if(length(boot_fit) == 1 || abs(boot_fit$alpha) > 5) return(-1);
+    boot_fit <- glm_boot(fit, b_boot = 10, verbose = F)
+    # boot_fit <- tryCatch(glm_boot(fit, b_boot = 10, verbose = F), 
+    #                      error = function(e) return(-1))
+    # if(length(boot_fit) == 1 || abs(boot_fit$alpha) > 5) return(-1);
     gamma_hat[i] <- boot_fit$gamma_hat
   }
   gamma <- mean(gamma_hat)
@@ -53,7 +54,7 @@ They collected data from participants in Korea National Health and Nutrition Exa
 [^1]: FVC is forced vital capacity and FEV1 is forced expiratory volume in one second
 
 ```{r, load_data}
-dataloc <- "/Users/zq/Desktop/Topics/glm_boot/paper/code/Arxiv/Data/"
+dataloc <- "/Data/"
 rsp <- read_excel(paste0(dataloc, "/rsp.xlsx"), na = ".")
 pos <- rsp$HE_FVCp < 80 & rsp$HE_FEV1FVC > 0.7 # positive obs
 ```
@@ -63,7 +64,7 @@ pos <- rsp$HE_FVCp < 80 & rsp$HE_FEV1FVC > 0.7 # positive obs
 # data.frame(rsp,pos = pos) %>% drop_na() %>% group_by(pos) %>% summarize(mean(ATO_DX))
 ```
 
-## Fitting logistic regression on full data
+## Fitting a logistic regression on full data
 
 Since I will fit a logistic regression using a smaller sample size later (sample size $n=200$), I remove the variables that have smaller than 5% occurance in the positive or negative class (therefore I remove Proteinuria, Previous cardiovascular disease, Pulmondary TB, Atopic dermatitis, Bronchial asthma, Glomerular hyperfiltration).
 
@@ -213,7 +214,8 @@ for(i in 1:nsubsample){
     sd_mle[,i] <- summary(fit)$coef[,2]
   }
   
-  fit_boot <-  tryCatch(error= function(e) {cat(i, "E!\t"); return(-1)}, boot_fit_master(fit, B))
+  fit_boot <- boot_fit_master(fit, B)
+  # fit_boot <-  tryCatch(error= function(e) {cat(i, "E!\t"); return(-1)}, boot_fit_master(fit, B))
   if(length(fit_boot) == 1) {error <- c(error, i); next;}
   fit_boot_store[[i]] <- fit_boot
   sd_boot[i, ] <- apply(fit_boot$boot_sample, 1, sd)
@@ -233,7 +235,7 @@ if(length(error) >= 1){
 
 ```
 
-The number of times the MLE does not exist is `r length(sep)` and the number of times the resized bootstrap fails is `r length(error)`.
+The number of times the MLE does not exist is `r length(sep)` and the number of times the resized bootstrap fails is `r length(error)`. The sample that causes an error is `r error`.
 
 ### Bias of the MLE
 
@@ -243,7 +245,7 @@ We plot the average MLE (in sub-samples) versus the MLE using the full data (the
 avg_alpha_ab <- mean(alpha_boot)
 avg_mle <- rowMeans(mle_s)
 std_mle <- apply(mle_s, 1, sd)
-# png(filename = "/Users/zq/Documents/Simulation_Data/glm/glm_boot/fig/real_bias0815.png",width = 5, height = 4, units = "in", res = 3000)
+# png(filename = "real_bias.png",width = 5, height = 4, units = "in", res = 3000)
 ggplot() + 
   geom_point(aes(x = coef(fit_full)[-1], y = avg_mle[-1]), color = "black", size = 2) + 
   geom_abline(slope = 1, intercept = 0, color = "black") + 
@@ -253,7 +255,7 @@ ggplot() +
   ylab("Average MLE") + 
   theme_bw() + 
   theme(text = element_text(size = 18))
-# dev.off()
+#dev.off()
 ```
 
 ### Std.dev of the MLE
@@ -268,7 +270,7 @@ std_data <- tibble(
   method = rep(c("Classical",  "Adj.Bootstrap"), each = 17)
 )
 
-# png(filename = "/Users/zq/Documents/Simulation_Data/glm/glm_boot/fig/real_sd0815.png",width = 6, height = 4.8, units = "in", res = 3000)
+# png(filename = "real_sd.png",width = 6, height = 4.8, units = "in", res = 3000)
 ggplot(std_data) + 
   geom_point(aes(x = std, y = estimated, color = method), size = 2)+  
   geom_abline(slope = 1, intercept = 0) + 

@@ -1,0 +1,242 @@
+---
+title: "An example where the sample size is small"
+author: "Qian Zhao"
+date: "2023-03-20"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(glmhd)
+fileloc <- "/Users/zq/Desktop/Topics/glm_boot/paper/code/Arxiv/R/"
+filename = list.files(path=fileloc, pattern = "*.R")
+sourcefile = sapply(filename, function(t) paste0(fileloc, t))
+sapply(sourcefile, source, .GlobalEnv)
+```
+
+In this section, we consider an example when the sample size is small ($n = 400$ and $p=40$). Here, we sample the covariates i.i.d. from a pareto distribution, which is defined with density function $f(x) = \alpha M^\alpha/x^{\alpha+1}$ for $x\geq M$ (we set $\alpha = 5$ and $M = 1$). Here, standardize $X_j$ to have variance $1/p$. While we expect that the MLE to be from a Gaussian distribution if $n$ and $p$ is large (this is because the covariates are i.i.d.), however, we expect that the Gaussian assumption to be incorrect when the sample size is small. 
+
+In this example, we sample half of the variables to be non-nulls and sample their coefficients to be an equal mixture of $\mathcal{N}(4,1)$ and $\mathcal{N}(-4,1)$.
+
+```{r, set_seet}
+set.seed(1)
+```
+
+```{r, small_simulation_setting}
+n <- 400
+p <- 40
+beta <- numeric(p)
+ind <- sample(1:p, p, replace = F)
+null <- ind[1:(p/2)]
+nonnull <- ind[(p/2+1):p]
+beta[nonnull] <- rnorm(p/2, 4, 1) * sample(c(-1,1), prob=c(0.5, 0.5), replace = T)
+gamma <- sqrt(sum(beta^2) / p)
+```
+
+The signal strength in this example is `r round(gamma,2)`. 
+
+```{r,pareto}
+# Function to sample from a pareto distribution
+rpareto <- function(n, df){
+  mean <- df / (df - 1)
+  sd <- sqrt(df / (df - 2) / (df - 1)^2) # standard deviation
+  u <- runif(n, 0, 1)
+  ((1/(1-u))^(1/df) - mean) / sd
+}
+```
+
+
+```{r, sample_obs_small, echo = F}
+sample_obs_small <- function(n, p, beta){
+  X <- matrix(0, n, p)
+  X <- matrix(rpareto(n*p, 5), nrow =n)
+  X <- scale(X) / sqrt(p)
+  mu <- 1 / (1 + exp(- X %*% beta))
+  Y <- rbinom(n, 1, mu)
+  
+  list(X = X, Y = Y)
+}
+
+sample_logistic_small <- function(n, beta){
+  p <- length(beta) # number of variables
+  obs <- sample_obs_small(n, p, beta)
+  # Logistic regression 
+  fit <- glm(obs$Y ~ obs$X + 0, family = binomial, x = TRUE, y = TRUE)
+  # Returns the fitted coefficients and their standard error estimates
+  c(fit$coef, summary(fit)$coef[,2])
+}
+```
+
+### Inflation and std.dev.
+
+```{r, repeated_sim_small, echo = F}
+B <- 1000
+results <- replicate(B, sample_logistic_small(n, beta))
+beta_hat <- results[1:p, ] # p by B MLE matrix
+std_hat <- results[(p+1):(2*p), ] # p by B matrix of the estimated std.dev. 
+j <- nonnull[1] # focus on one coordinate
+betahatj <- rbind(beta_hat[j,], std_hat[j,]) 
+```
+
+We repeat this simulation `r B` times to compute the inflation and std.dev. of the MLE. The MLE of a single non-null variable ($\beta_j = $, `round(beta[j],2)``) is inflated by a factor of `r round(mean(betahatj[1,])/beta[j],  2)`. The empirical std.dev is `r round(sd(betahatj[1,]), 2)`. In comparison, the classical theory estimate is on average `r round(mean(betahatj[2,]),2)` which is `r round((sd(betahatj[1,]) - mean(betahatj[2,])) / sd(betahatj[1,]) *100, 2)`\% smaller than the empirical std. dev. 
+
+```{r, echo = F, high-dim-theory-small}
+params <- find_param(kappa = 0.1, gamma = gamma, intercept = F)
+```
+
+The theoretical inflation is $\alpha_\star = $ `r params[1]` and the estimated standard deviation (`r params[3]/sqrt(kappa)/tau[j] `) is `r round((sd(betahatj[1,]) - params[3]/sqrt(kappa)/tau[j]) / sd(betahatj[1,]) *100, 2)`\% smaller than the empirical std. dev. smaller than the empirical standard deviation. 
+
+Finally, we use the resized bootstrap method to estimate the inflation and the std.dev.
+
+```{r onesample_small}
+X <- matrix(rpareto(n*p, 5), nrow =n)
+X <- scale(X) / sqrt(p)
+mu <- 1 / (1 + exp(- X %*% beta))
+Y <- rbinom(n, 1, mu)
+  
+fit <- glm(Y ~ X + 0, family = binomial, x = TRUE, y = TRUE)
+```
+
+
+```{r resizedbootfit_small}
+resizedboot_fit <- glm_boot(fit, s_interval = 0.02, b_var = 5, b_boot = 1000, robust_est = FALSE, verbose = F, filename = NA)
+```
+
+The estimated inflation is `r round(resizedboot_fit$alpha, 2)` and the estimated std.dev. is `r round(resizedboot_fit$sd[j], 2)` which is `r round((sd(betahatj[1,]) - resizedboot_fit$sd[j]) / sd(betahatj[1,]) *100, 2)`\% smaller than the empirical std.dev. 
+
+## Q-Q plots (Supplement Figure 3)
+
+We plot a normal quantile plot of the MLE which shows that the MLE is skewed to the right. On the other hand, we can also plot the 
+
+```{r, normal-qq-small, echo = F}
+g1 <- ggplot() + geom_qq(aes(sample =betahatj[1, ])) +
+  ylab( "Sample quantiles") +
+  xlab("Normal quantiles") +
+  theme_bw() +
+  theme(text = element_text(size = 18))
+ggsave(g1, filename = "/Users/zq/Documents/Simulation_Data/glm/glm_boot/revision/fig/normal_qq_small.png", width = 5, height = 4)
+```
+
+Next, we plot a Q-Q plot of the standardized MLE (standardized by the empirical mean and std.dev) versus the standardized bootstrap MLE (standardized by the estimated inflation and std.dev. using the resized bootstrap). 
+
+```{r}
+data <- tibble(
+  mle = sort((betahatj[1,] - mean(betahatj[1,]))/sd(betahatj[1, ])),
+  boot = sort((resizedboot_fit$boot_sample[j, ] - resizedboot_fit$alpha  * resizedboot_fit$beta_s[j]) / resizedboot_fit$sd[j])
+)
+g2 <- ggplot(data,aes(x = mle, y = boot)) + 
+  geom_point() +
+  geom_abline(color = "red", slope = 1, intercept = 0) +
+  ylab( "Standairzed bootstrap MLE") +
+  xlab("Standardized MLE") +
+  theme_bw() +
+  theme(text = element_text(size = 18))
+ggsave(g2, filename = "/Users/zq/Documents/Simulation_Data/glm/glm_boot/revision/fig/boot_qq_small.png", width = 5, height = 4)
+
+```
+
+### Coverage proportion
+
+Finally, we compute the coverage proportion of a single variable or a single shot experiment using the classical CI, HDT and the bootstrap-t interval. 
+
+
+```{r}
+all_alpha <- c(0.05, 0.1, 0.2)
+
+small_ci <- function(){
+  cat(1, ",")
+  X <- matrix(rpareto(n*p, 5), nrow =n)
+  X <- scale(X) / sqrt(p)
+  mu <- 1 / (1 + exp(- X %*% beta))
+  Y <- rbinom(n, 1, mu)
+    
+  fit <- glm(Y ~ X + 0, family = binomial, x = TRUE, y = TRUE)
+  
+  resizedboot_fit <- glm_boot(fit, s_interval = 0.02, b_var = 5, b_boot = 1000, robust_est = FALSE, verbose = F, filename = NA)
+  
+  result <- NULL
+  for(i in 1:length(all_alpha)){
+    alpha <- all_alpha[i]
+    # high-dimensional 
+    lower_hdt <- (fit$coef - qnorm(1-alpha/2) * params[3]) / params[1]
+    upper_hdt <- (fit$coef - qnorm(alpha/2) * params[3]) / params[1]
+    
+    # Gaussian 
+    lower_gaussian <- (fit$coef - qnorm(1-alpha/2) * resizedboot_fit$sd) / resizedboot_fit$alpha
+    upper_gaussian <- (fit$coef - qnorm(alpha/2) * resizedboot_fit$sd) / resizedboot_fit$alpha
+    
+    # Bootstrap t
+    tval <- (resizedboot_fit$boot_sample - resizedboot_fit$alpha * resizedboot_fit$beta_s) / resizedboot_fit$sd
+    
+    lower_t <- (fit$coef - apply(tval, 1, function(t) quantile(t, 1-alpha/2)) *  resizedboot_fit$sd) / resizedboot_fit$alpha
+    upper_t <- (fit$coef - apply(tval, 1, function(t) quantile(t, alpha/2)) *  resizedboot_fit$sd) / resizedboot_fit$alpha
+    
+    new_result <- rbind(lower_hdt, upper_hdt, lower_gaussian, upper_gaussian, lower_t, upper_t)
+    
+    result <- rbind(result, new_result)
+  }
+  
+  return(result)
+}
+```
+
+Then, we repeat this experiment multiple times to obtain the CI for each simulation. 
+
+```{r}
+B <- 1000
+ci <- replicate(B, small_ci())
+```
+
+```{r, save_intermediate_results, echo = F}
+save.image("/Users/zq/Documents/Simulation_Data/glm/glm_boot/revision/small/small.RData")
+```
+
+Finally, we compute the coverage proportion using high-dimensional theory, bootstrap-g and bootstrap-g confidence intervals.
+
+```{r}
+all_alpha <- c(0.05, 0.1, 0.2)
+
+j <- nonnull[1]
+# store the coverage proportion
+coverage_bulk <- matrix(0, 3, 6)
+coverage_single <- matrix(0, 3, 6)
+
+for(i in 1:length(all_alpha)){
+  lower_hdt <- matrix(0, p, B)
+  upper_hdt <- matrix(0, p, B)
+  lower_gaussian <- matrix(0, p, B)
+  upper_gaussian <- matrix(0, p, B)
+  lower_boot <- matrix(0, p, B)
+  upper_boot <- matrix(0, p, B)
+  
+  for(b in 1:B){
+    lower_hdt[ ,b] <- ci[1 + (i-1) * 6,, b]
+    upper_hdt[ ,b] <- ci[2+ (i-1) * 6,, b]
+    lower_gaussian[,b] <- ci[3+ (i-1) * 6,, b]
+    upper_gaussian[,b] <- ci[4+ (i-1) * 6,, b]
+    lower_boot[,b] <- ci[5+ (i-1) * 6,, b]
+    upper_boot[,b] <- ci[6+ (i-1) * 6, , b]
+  }
+  
+  
+  hdt_covered <- beta < upper_hdt & beta > lower_hdt
+  gaussian_covered <- beta < upper_gaussian & beta > lower_gaussian
+  boot_covered <- beta < upper_boot & beta > lower_boot
+  
+  coverage_bulk[i, 1] <-  mean(colMeans(hdt_covered));
+  coverage_bulk[i, 2] <-  sd(colMeans(hdt_covered)) / sqrt(B);
+   coverage_bulk[i, 3] <-  mean(colMeans(gaussian_covered));
+  coverage_bulk[i, 4] <-  sd(colMeans(gaussian_covered)) / sqrt(B);
+  coverage_bulk[i, 5] <-  mean(colMeans(boot_covered));
+  coverage_bulk[i, 6] <-  sd(colMeans(boot_covered)) / sqrt(B);
+ 
+  coverage_single[i, 1] <-  mean(hdt_covered[j, ]);
+  coverage_single[i, 2] <-  sd(hdt_covered[j, ]) / sqrt(B);
+  coverage_single[i, 3] <-  mean(gaussian_covered[j, ]);
+  coverage_single[i, 4] <-  sd(gaussian_covered[j, ]) / sqrt(B);
+  coverage_single[i, 5] <-  mean(boot_covered[j, ]);
+  coverage_single[i, 6] <-  sd(boot_covered[j, ]) / sqrt(B);
+}
+
+```
