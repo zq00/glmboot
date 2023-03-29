@@ -1,6 +1,6 @@
 library(tidyverse)
 
-phase0 <- read.table("~/Documents/GitHub/logisticMLE/paper/section-5/code/phase0.txt", quote="\"", comment.char="")
+phase0 <- read.table("phase0.txt", quote="\"", comment.char="")
 colnames(phase0) <- c("gamma", "kappa")
 # Plot the phase transition diagram
 
@@ -15,7 +15,7 @@ g <- ggplot(phase0Plot) +
   ylab(expression(gamma)) + 
   theme_bw() + 
   theme(text = element_text(size = 18))
-filename <- "/Users/zq/Documents/Simulation_Data/glm/glm_boot/fig/phase_diagram.png"
+filename <- "/fig/phase_diagram.png"
 ggsave(filename = filename, plot = g, 
        units = "in",
        width = 6, height = 5,
